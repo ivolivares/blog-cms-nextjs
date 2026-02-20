@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { RealtimeToggle } from "@/components/RealtimeToggle";
 import { supabase } from "@/lib/supabase";
 
 interface Post {
@@ -97,6 +98,8 @@ export default function DashboardPage() {
           <Button>Crear Nuevo Post</Button>
         </Link>
       </div>
+
+      <RealtimeToggle />
 
       <Card>
         <CardHeader>

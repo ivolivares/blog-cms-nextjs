@@ -51,6 +51,9 @@ CREATE POLICY "Enable update for post authors" ON posts
 -- Policy 4: Allow authenticated users to delete their own posts
 CREATE POLICY "Enable delete for post authors" ON posts
   FOR DELETE USING (auth.role() = 'authenticated');
+
+-- One more thing - activating real time
+ALTER PUBLICATION supabase_realtime ADD TABLE posts;
 */
 
 // SQL Migration (for reference)
@@ -87,4 +90,7 @@ CREATE POLICY "Enable update for post authors" ON posts
 
 CREATE POLICY "Enable delete for post authors" ON posts
   FOR DELETE USING (auth.role() = 'authenticated');
+
+-- One more thing - activating real time
+ALTER PUBLICATION supabase_realtime ADD TABLE posts;
 */

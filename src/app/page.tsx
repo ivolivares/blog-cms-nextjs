@@ -1,4 +1,5 @@
 import { PostCard } from "@/components/PostCard";
+import { RealtimeChecker } from "@/components/RealtimeChecker";
 import { supabase } from "@/lib/supabase";
 
 // Define Post interface to match database schema
@@ -37,11 +38,7 @@ export default async function Home() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {posts?.map((post) => (
-          <PostCard key={post.id} post={post as Post} />
-        ))}
-      </div>
+      <RealtimeChecker initialPosts={posts || []} />
 
       {!posts || posts.length === 0 ? (
         <div className="text-center py-12">
