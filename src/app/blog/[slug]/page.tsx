@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getPostBySlug, getAllPosts } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { supabase } from "@/lib/supabase";
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -10,18 +10,30 @@ interface BlogPostPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  const posts = getAllPosts();
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  slug: string;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  
+  // Fetch post from Supabase
+  const { data: post, error } = await supabase
+    .from('posts')
+    .select('*')
+    .eq('slug', slug)
+    .single();
 
-  if (!post) {
+  if (error || !post) {
     notFound();
   }
 

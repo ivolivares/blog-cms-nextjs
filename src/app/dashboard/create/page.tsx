@@ -8,9 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabase";
 
 export default function CreatePostPage() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -26,21 +29,54 @@ export default function CreatePostPage() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simulación de guardado - solo console.log y alerta
-    console.log("Datos del post a guardar:", {
-      ...formData,
-      date: new Date().toISOString().split('T')[0],
-      slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-      id: Date.now().toString()
-    });
-    
-    alert("Guardado simulado - Los datos se han mostrado en la consola");
-    
-    // Redirigir al dashboard
-    router.push("/dashboard");
+    setLoading(true);
+    setError("");
+
+    try {
+      // 1. Obtener el usuario autenticado actual
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      // 2. Si no hay usuario, lanzar error
+      if (userError || !user) {
+        throw new Error("Debes estar autenticado para crear un post");
+      }
+
+      // 3. Preparar datos del post
+      const slug = formData.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      
+      const postData = {
+        id: Date.now().toString(),
+        title: formData.title,
+        content: formData.content,
+        excerpt: formData.excerpt,
+        author: formData.author,
+        date: new Date().toISOString().split('T')[0],
+        slug: slug,
+        user_id: user.id, // Incluir el user_id del autor
+      };
+
+      // 4. Insertar el post en Supabase
+      const { error: insertError } = await supabase
+        .from('posts')
+        .insert(postData);
+
+      if (insertError) {
+        throw new Error(`Error al guardar el post: ${insertError.message}`);
+      }
+
+      // 5. Redirigir al Home
+      router.push("/");
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -67,6 +103,12 @@ export default function CreatePostPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {error && (
+              <div className="text-sm text-red-600 bg-red-50 p-3 rounded">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="title">Título *</Label>
               <Input
@@ -77,6 +119,7 @@ export default function CreatePostPage() {
                 value={formData.title}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -90,6 +133,7 @@ export default function CreatePostPage() {
                 value={formData.author}
                 onChange={handleChange}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -103,6 +147,7 @@ export default function CreatePostPage() {
                 onChange={handleChange}
                 rows={3}
                 required
+                disabled={loading}
               />
             </div>
 
@@ -116,15 +161,16 @@ export default function CreatePostPage() {
                 onChange={handleChange}
                 rows={12}
                 required
+                disabled={loading}
               />
             </div>
 
             <div className="flex space-x-4">
-              <Button type="submit" className="flex-1">
-                Guardar Post
+              <Button type="submit" className="flex-1" disabled={loading}>
+                {loading ? "Guardando..." : "Guardar Post"}
               </Button>
               <Link href="/dashboard">
-                <Button type="button" variant="outline" className="flex-1">
+                <Button type="button" variant="outline" className="flex-1" disabled={loading}>
                   Cancelar
                 </Button>
               </Link>
