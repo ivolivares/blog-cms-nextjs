@@ -9,7 +9,7 @@ export function Navbar() {
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center">
         <Link href="/" className="font-bold text-xl">
           Blog CMS
         </Link>
