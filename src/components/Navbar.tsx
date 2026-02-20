@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -24,14 +26,34 @@ export function Navbar() {
             </Button>
           </Link>
           
-          <Link href="/dashboard">
-            <Button 
-              variant={pathname.startsWith("/dashboard") ? "default" : "ghost"}
-              className="font-medium"
-            >
-              Dashboard
-            </Button>
-          </Link>
+          {user ? (
+            <>
+              <Link href="/dashboard">
+                <Button 
+                  variant={pathname.startsWith("/dashboard") ? "default" : "ghost"}
+                  className="font-medium"
+                >
+                  Dashboard
+                </Button>
+              </Link>
+              <Button 
+                variant="outline" 
+                onClick={signOut}
+                className="font-medium"
+              >
+                Cerrar Sesión
+              </Button>
+            </>
+          ) : (
+            <Link href="/login">
+              <Button 
+                variant={pathname === "/login" ? "default" : "default"}
+                className="font-medium"
+              >
+                Login
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </nav>
